@@ -20,10 +20,9 @@ namespace dfa {
 		state_t *states;
 		std::size_t num_states;
 	};
-
-	// CLASSES
 }
 
+// CLASSES
 class DFA {
 	dfa::states_t states;
 	dfa::transition_fn* transition;
