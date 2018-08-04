@@ -1,0 +1,10 @@
+*
+!*.*
+*.o
+/build/
+/Includes/
+/Binaries/
+/.idea/
+/.cproject
+/.project
+/.settings/
