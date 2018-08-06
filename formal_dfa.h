@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <string>
 #include <set>
+#include <map>
 
 namespace dfa {
 	// TYPEDEFS
@@ -8,7 +9,7 @@ namespace dfa {
 	typedef struct state* state_t;
 	typedef struct state_set* states_t;
 	typedef struct state_set state_set;
-	typedef std::size_t transition_fn(states_t states, std::size_t curr_index, char transition);
+	typedef std::string transition_fn(std::string label, char transition);
 
 	// STRUCTS
 	struct state {
@@ -17,7 +18,7 @@ namespace dfa {
 	};
 
 	struct state_set {
-		state_t *states;
+		std::map<std::string, state_t> *states;
 		std::size_t num_states;
 	};
 }
@@ -27,15 +28,12 @@ class DFA {
 	dfa::states_t states;
 	dfa::transition_fn* transition;
 	std::set<char> *alphabet;
-	std::size_t start_index;
+	std::string start_label;
+	void validate();
 	public:
-		DFA(dfa::states_t states, dfa::transition_fn* transition);
-		DFA(dfa::states_t states, dfa::transition_fn* transition, dfa::state_t start_state);
-		DFA(dfa::states_t states,
-			dfa::transition_fn *transition,
-			char *alphabet,
-			std::size_t alphabet_size);
-		DFA(dfa::states_t states,
+		DFA(dfa::state_t* states, std::size_t num_states, dfa::transition_fn* transition, dfa::state_t start_state);
+		DFA(dfa::state_t* states,
+			std::size_t num_states,
 			dfa::transition_fn *transition,
 			char *alphabet,
 			std::size_t alphabet_size,
@@ -46,6 +44,6 @@ class DFA {
 		dfa::states_t get_states();
 		dfa::transition_fn *get_transition_fn();
 		std::set<char> get_alphabet();
-		std::size_t get_start();
+		std::string get_start();
 
 };
