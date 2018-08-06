@@ -1,70 +1,53 @@
+#include <iostream>
 #include "formal_dfa.h"
 
-DFA::DFA(dfa::states_t formal_states, dfa::transition_fn transitionfn) {
-	states = formal_states;
-	transition = transitionfn;
-	alphabet = new std::set<char>();
-	(*alphabet).insert('0');
-	(*alphabet).insert('1');
-	start_index = 0;
-}
-
-DFA::DFA(dfa::states_t formal_states,
-		 dfa::transition_fn* transitionfn,
-		 char* provided_alphabet,
-		 std::size_t alphabet_size) {
-	states = formal_states;
-	transition = transitionfn;
-	alphabet = new std::set<char>();
-	for (std::size_t i = 0; i < alphabet_size; i++) {
-		(*alphabet).insert(provided_alphabet[i]);
+void DFA::validate() {
+	if (states->states->find(start_label) == states->states->end()) {
+		throw "Invalid start label";
 	}
-	start_index = 0;
-}
-
-DFA::DFA(dfa::states_t formal_states, dfa::transition_fn transitionfn, dfa::state_t start_state) {
-	states = formal_states;
-	transition = transitionfn;
-	alphabet = new std::set<char>();
-	(*alphabet).insert('0');
-	(*alphabet).insert('1');
-
-	bool dirty = false; // check if changed
-	for(std::size_t i = 0; i < states->num_states; i++) {
-		if (start_state->label.compare(states->states[i]->label) == 0) {
-			start_index = i;
-			dirty = true;
-			break;
+	for (auto it = alphabet->begin(); it != alphabet->end(); ++it) {
+		for (auto it2 = states->states->begin(); it2 != states->states->end(); ++it2) {
+			if (states->states->find(transition(it2->first, *it)) == states->states->end()) {
+				throw "State with label " + it2->first + "does not have valid transition on character" + *it;
+			}
 		}
 	}
-	if (!dirty) {
-		throw "Starting state is not in the state set.";
-	}
 }
 
-DFA::DFA(dfa::states_t formal_states,
+DFA::DFA(dfa::state_t *formal_states, std::size_t num_states, dfa::transition_fn transitionfn, dfa::state_t start_state) {
+	states = new dfa::state_set;
+	states->num_states = num_states;
+	states->states = new std::map<std::string, dfa::state_t>();
+	for(std::size_t i = 0; i < num_states; i++) {
+		(*states->states)[formal_states[i]->label] = formal_states[i];
+	}
+	transition = transitionfn;
+	alphabet = new std::set<char>();
+	(*alphabet).insert('0');
+	(*alphabet).insert('1');
+	start_label = start_state->label;
+	validate();
+}
+
+DFA::DFA(dfa::state_t *formal_states,
+		 std::size_t num_states,
 		 dfa::transition_fn* transitionfn,
 		 char* provided_alphabet,
 		 std::size_t alphabet_size,
 		 dfa::state_t start_state) {
-	states = formal_states;
+	states = new dfa::state_set;
+	states->num_states = num_states;
+	states->states = new std::map<std::string, dfa::state_t>();
+	for(std::size_t i = 0; i < num_states; i++) {
+		(*states->states)[formal_states[i]->label] = formal_states[i];
+	}
 	transition = transitionfn;
 	alphabet = new std::set<char>();
 	for (std::size_t i = 0; i < alphabet_size; i++) {
 		(*alphabet).insert(provided_alphabet[i]);
 	}
-
-	bool dirty = false;
-	for(std::size_t i = 0; i < states->num_states; i++) {
-		if (start_state->label.compare(states->states[i]->label) == 0) {
-			start_index = i;
-			dirty = true;
-			break;
-		}
-	}
-	if (!dirty) {
-		throw "Starting state is not in the state set.";
-	}
+	start_label = start_state->label;
+	validate();
 }
 
 //DFA::~DFA() {
@@ -77,16 +60,16 @@ DFA::DFA(dfa::states_t formal_states,
 
 dfa::state_t DFA::run(std::string s) {
 	std::size_t str_len = s.length();
-	std::size_t current = start_index;
+	std::string label = start_label;
 	for ( std::size_t i = 0; i < str_len; i++) {
 		char c = s[i];
 		if ((*alphabet).find(c) != (*alphabet).end()) {
-			current = transition(states, current, c);
+			label = transition(label, c);
 		} else {
 			throw "No such character in the alphabet";
 		}
 	}
-	return states->states[current];
+	return (*states->states)[label];
 }
 
 bool DFA::accepts(std::string s) {
@@ -105,6 +88,6 @@ std::set<char> DFA::get_alphabet() {
 	return *alphabet;
 }
 
-std::size_t DFA::get_start() {
-	return start_index;
+std::string DFA::get_start() {
+	return start_label;
 }

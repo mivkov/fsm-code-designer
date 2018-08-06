@@ -3,32 +3,33 @@
 
 import sys
 
+def step(label, c):
+	'''
+	Finds the next label to be accessed while
+	stepping through the DFA.
+	@param label: the current label/state the DFA is on
+	@param c: the next read character
+	'''
+	if c == '0' and label == '0':
+		return '1'
+	if c == '0' and label == '1':
+		return '0'
+	if c == '1' and label == '0':
+		return '1'
+	if c == '1' and label == '1':
+		return '0'
+	sys.exit('invalid label')
+
+
 def run(string):
 	'''
-	Runs the given DFA on a certain string
+	Runs the given DFA on a certain string.
 	@param string: the string to run the DFA on
 	'''
-	curr = 'State 0'
+	state = '0'
 	for c in string:
-		if c == '0' and curr == 'State 0':
-			curr = 'State 0'
-			continue
-		if c == '0' and curr == 'State 1':
-			curr = 'State 1'
-			continue
-		if c == '1' and curr == 'State 0':
-			curr = 'State 1'
-			continue
-		if c == '1' and curr == 'State 1':
-			curr = 'State 0'
-			continue
-		if c == '2' and curr == 'State 0':
-			curr = 'State 0'
-			continue
-		if c == '2' and curr == 'State 1':
-			curr = 'State 1'
-			continue
-	return curr in ['State 0']
+		state = step(state, c)
+	return state in ['0']
 
 
 if __name__ == '__main__':
